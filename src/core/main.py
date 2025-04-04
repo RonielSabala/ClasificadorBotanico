@@ -1,15 +1,16 @@
 import tkinter as tk
-from tkinter import font, PhotoImage
-from typing import Any, Type
+from tkinter import PhotoImage
+from typing import Type
+
+from .common.constants import RUTA_ICONO
+from .common import estilos as Estilos
 
 
-# Variables de la ventana principal.
-# |
-# v
+# - Variables para la ventana principal:
 
 RAIZ = tk.Tk()
 RAIZ.title("jbn")
-RAIZ.iconphoto(True, PhotoImage(file="core\\imagenes\\icono.png"))
+RAIZ.iconphoto(True, PhotoImage(file=RUTA_ICONO))
 
 WIDTH, HEIGTH = 750, 900
 padx = int(1920 / 2 + WIDTH / 2 - WIDTH)
@@ -17,102 +18,21 @@ pady = int(1080 / 2 + HEIGTH / 2 - HEIGTH)
 RAIZ.geometry(f"{WIDTH}x{HEIGTH}+{padx}+{pady}")
 RAIZ.resizable(False, False)
 
-# Contenedor para las escenas.
-# |
-# v
-
+# Contenedor para las escenas
 CONTENEDOR = tk.Frame(RAIZ)
 CONTENEDOR.pack(fill="both", expand=True)
 CONTENEDOR.grid_rowconfigure(0, weight=1)
 CONTENEDOR.grid_columnconfigure(0, weight=1)
 
 
-def obtener_conexion():
-    pass
-
-
-def hacer_reactivo(*botones):
-    """
-    Hace que cuando se pase el mouse por encima del boton
-    se cambie el tipo de mouse.
-    """
-
-    def func(boton):
-        boton.bind("<Enter>", lambda event: boton.config(cursor="hand2"))
-        boton.bind("<Leave>", lambda event: boton.config(cursor="arrow"))
-
-    for boton in botones:
-        func(boton)
-
-
-class Estilos:
-    """
-    Clase para almacenar estilos.
-    """
-
-    boton_primario = {
-        "bd": 0,
-        "font": ("Arial", 26, "bold"),
-        "fg": "black",
-        "bg": "goldenrod1",
-        "activeforeground": "black",
-        "activebackground": "goldenrod3",
-        "cursor": "hand2",
-        "padx": 5,
-        "pady": 2,
-        "relief": "flat",
-    }
-
-    boton_añadir = {
-        "bd": 0,
-        "font": ("Arial", 16, "bold"),
-        "fg": "white",
-        "bg": "SpringGreen4",
-        "activeforeground": "white",
-        "activebackground": "Dark Green",
-        "cursor": "hand2",
-        "padx": 10,
-        "pady": 5,
-        "relief": "flat",
-    }
-
-    boton_eliminar = {
-        "bd": 0,
-        "font": ("Arial", 16, "bold"),
-        "fg": "white",
-        "bg": "#b22222",
-        "activeforeground": "white",
-        "activebackground": "#8b0000",
-        "cursor": "hand2",
-        "padx": 10,
-        "pady": 5,
-        "relief": "flat",
-    }
-
-    texto_subrayado = {
-        "font": font.Font(family="Arial", size=12, underline=True),
-        "fg": "DodgerBlue3",
-        "activeforeground": "goldenrod1",
-        "relief": "sunken",
-        "border": 0,
-    }
-
-    @staticmethod
-    def fondo(escena: Type["Escena"]) -> dict[str, Any]:
-        return {
-            "bg": escena.color_fondo,
-            "activebackground": escena.color_fondo,
-        }
-
-
 class Escena:
     raiz: tk.Frame
-    main_element: None | tk.Entry = None
+    fue_cargada: bool = False
     escena_anterior: Type["Escena"] | None = None
     escena_posterior: Type["Escena"] | None = None
     color_fondo: str = "White"
     color_fondo_opaco: str = "Gray78"
-    fue_cargada: bool = False
+    main_element: None | tk.Entry = None
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
@@ -151,7 +71,7 @@ class Escena:
     @classmethod
     def mostrar(cls) -> None:
         """
-        Cambia la escena a la escena usada.
+        Muestra la escena.
         """
 
         if cls.fue_cargada is False:
@@ -214,7 +134,7 @@ class Escena:
         fg: str = "white",
     ) -> None:
         """
-        Coloca un texto con coordenadas relativas.
+        Coloca un texto con coordenadas relativas en la escena.
         """
 
         label = tk.Label(
@@ -230,10 +150,9 @@ class Escena:
     @classmethod
     def colocar_retorno(cls, fg: str = "Black") -> None:
         """
-        Coloca un botón de retorno para ir a la escena anterior.
-
-        También existe la posibilidad de presionar ESC para ejecutar
-        la misma funcionalidad
+        Coloca un botón de retorno para ir a la escena
+        anterior. Si se presiona ESC dicho botón es
+        activado.
         """
 
         if cls.escena_anterior is None:
@@ -247,27 +166,20 @@ class Escena:
             cls.raiz,
             text="Volver",
             font=("Arial", 12),
-            bg=cls.color_fondo,
             fg=fg,
+            bg=cls.color_fondo,
         )
-
         boton = tk.Button(
             cls.raiz,
-            text="↵",
-            font=("Arial", 25),
-            bg=cls.color_fondo,
             fg=fg,
-            activebackground=cls.color_fondo_opaco,
             command=lambda: escape(None),
-            width=2,
-            border=0,
-            relief="flat",
+            activebackground=cls.color_fondo_opaco,
+            **Estilos.btn_retorno,
         )
 
         cls.raiz.bind("<Escape>", escape)
         texto.place(relx=0.048, rely=0.13, anchor="nw")
         boton.place(relx=0.05, rely=0.05, anchor="nw")
-        hacer_reactivo(boton)
 
     @classmethod
     def colocar_footer(cls):
@@ -282,15 +194,6 @@ class Escena:
     @classmethod
     def obtener_grid(cls):
         return tk.Frame(cls.raiz, bg=cls.color_fondo)
-
-
-def cargar_escenas():
-    """
-    Carga todas las escenas.
-    """
-
-    for escena in Escena.__subclasses__():
-        escena.cargar()
 
 
 def cerrar_escenas():

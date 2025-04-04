@@ -41,11 +41,13 @@ class Terminos(Escena):
 
     @classmethod
     def cargar(cls) -> None:
+        # Header
         cls.colocar_retorno()
         cls.colocar_texto("", 0, pady=35)
         cls.colocar_texto("Términos De Uso", 30, pady=0, fg="#091518")
         cls.colocar_texto("", 0, pady=0)
 
+        # Caja de texto
         box = scrolledtext.ScrolledText(cls.raiz, wrap=tk.WORD, width=50, height=12)
         box.pack(padx=85, pady=0, fill=tk.BOTH, expand=True)
         box.config(state=tk.NORMAL, font=("Arial", 10), bg="Gray95")

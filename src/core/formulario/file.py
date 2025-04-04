@@ -1,35 +1,21 @@
+import shutil
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
-import shutil
 
-# Escenas
-from ..main import Escena, Estilos, hacer_reactivo
+from ..main import Escena
+from ..data import file as Data
+from ..common import estilos as Estilos
+from ..graficos.file import IMG_ICONO
+from ..common.constants import DEFAULT_IMG
 from ..menu.file import Menu
-from ..imagenes.file import F_ICONO
-from ..data.file import (
-    n_archivos,
-    agregar_registro,
-    obtener_ruta,
-)
+
 from .validaciones import (
     validar_nombre,
     validar_apellido,
     validar_ubicacion,
     validar_imagen,
-    DEFAULT_TEXT,
 )
-
-
-# Variables
-var_nombre = tk.StringVar()
-var_apellido = tk.StringVar()
-var_ubicacion = tk.StringVar()
-var_imagen = tk.StringVar()
-ruta_imagen = ""
-
-
-# Validación de campos.
 
 
 def guardar_formulario() -> None:
@@ -37,32 +23,25 @@ def guardar_formulario() -> None:
     Guarda y valida la información del formulario.
     """
 
-    nombre = var_nombre.get()
-    apellido = var_apellido.get()
-    ubicacion = var_ubicacion.get()
+    nombre = Formulario.nombre.get()
+    apellido = Formulario.apellido.get()
+    ubicacion = Formulario.ubicacion.get()
+    imagen = Formulario._imagen
 
     # Validar campos
     if not (
         validar_nombre(nombre)
         and validar_apellido(apellido)
         and validar_ubicacion(ubicacion)
-        and validar_imagen(ruta_imagen)
+        and validar_imagen(imagen)
     ):
         return
 
     try:
-        extension = ruta_imagen.split(".")[-1]
-        ruta = obtener_ruta(f"flor_survey_{n_archivos()}.{extension}")
-        data = [
-            nombre,
-            apellido,
-            ubicacion,
-            ruta,
-            None,
-        ]
-
-        agregar_registro(str(data))
-        shutil.copy(ruta_imagen, ruta)
+        extension = imagen.split(".")[-1]
+        ruta = Data.obtener_ruta(f"flor_survey_{Data.n_archivos()}.{extension}")
+        Data.agregar_registro(str([nombre, apellido, ubicacion, ruta, None]))
+        shutil.copy(imagen, ruta)
 
     except Exception as e:
         messagebox.showerror(
@@ -72,7 +51,7 @@ def guardar_formulario() -> None:
 
         return
 
-    # Cambiar de escena
+    # Mostrar la escena anterior
     if escena := Formulario.escena_anterior:
         escena.mostrar()
 
@@ -80,131 +59,118 @@ def guardar_formulario() -> None:
 class Formulario(Escena):
     escena_anterior = Menu
 
+    # Variables
+    nombre = tk.StringVar()
+    apellido = tk.StringVar()
+    ubicacion = tk.StringVar()
+    imagen = tk.StringVar()
+    _imagen = ""
+
     @classmethod
     def mostrar(cls) -> None:
-        global ruta_imagen
-
-        ruta_imagen = ""
-        var_nombre.set("")
-        var_apellido.set("")
-        var_ubicacion.set("")
-        var_imagen.set(DEFAULT_TEXT)
+        # Resetear variables
+        cls._imagen = ""
+        cls.nombre.set("")
+        cls.apellido.set("")
+        cls.ubicacion.set("")
+        cls.imagen.set(DEFAULT_IMG)
         super().mostrar()
 
     @classmethod
     def cargar(cls) -> None:
-        global ruta_imagen
+        # - Header:
 
-        cls.colocar_retorno("Black")
-        cls.colocar_footer()
-
-        # Header
-        tk.Label(cls.raiz, image=F_ICONO, bg=cls.color_fondo).pack(padx=10, pady=15)
+        cls.colocar_retorno()
+        tk.Label(cls.raiz, image=IMG_ICONO, bg=cls.color_fondo).pack(padx=10, pady=15)
         cls.colocar_texto("Formulario", 35, pady=15, fg="#091518")
         cls.colocar_texto("", 0, pady=15)
 
-        # Creación de los campos y botones.
-        # |
-        # v
+        # - Creación de los campos y botones:
 
-        # Estilo de los textos
         tamaño = 22
         color = "Black"
-        estilo_campo = {
-            "width": 22,
-            "font": ("Arial", 18),
-            "fg": "black",
-            "bg": cls.color_fondo,
-            "selectforeground": "Black",
-            "selectbackground": "GoldenRod1",
-        }
-
-        # Campos
         campo_nombre = tk.Entry(
             cls.raiz,
-            textvariable=var_nombre,
-            **estilo_campo,
+            textvariable=cls.nombre,
+            **Estilos.campo_txt,
         )
         campo_apellido = tk.Entry(
             cls.raiz,
-            textvariable=var_apellido,
-            **estilo_campo,
+            textvariable=cls.apellido,
+            **Estilos.campo_txt,
         )
         campo_ubicacion = tk.Entry(
             cls.raiz,
-            textvariable=var_ubicacion,
-            **estilo_campo,
+            textvariable=cls.ubicacion,
+            **Estilos.campo_txt,
         )
         campo_imagen = tk.Entry(
             cls.raiz,
-            textvariable=var_imagen,
+            textvariable=cls.imagen,
+            cursor="hand2",
             state="readonly",
-            cursor="arrow",
-            **estilo_campo,
+            **Estilos.campo_txt,
         )
         boton_guardar = tk.Button(
             cls.raiz,
             text="Guardar",
             command=lambda: guardar_formulario(),
-            **Estilos.boton_primario,
+            **Estilos.btn_primario,
         )
 
-        # Configuraciones de los campos y botones.
-        # |
-        # v
+        # - Configuración:
 
-        # Establecer el campo principal
+        # Campo principal
         cls.main_element = campo_nombre
 
         # Campo de usuario
         cls.colocar_texto("Nombre", tamaño, fg=color)
-        campo_nombre.pack()
         campo_nombre.bind("<Escape>", lambda event: cls.raiz.focus_set())
         campo_nombre.bind("<Down>", lambda event: campo_apellido.focus_set())
         campo_nombre.bind("<Return>", lambda event: campo_apellido.focus_set())
+        campo_nombre.pack()
 
         # Campo de appellido
         cls.colocar_texto("", 2)
         cls.colocar_texto("Apellido", tamaño, fg=color)
-        campo_apellido.pack()
         campo_apellido.bind("<Escape>", lambda event: cls.raiz.focus_set())
         campo_apellido.bind("<Up>", lambda event: campo_nombre.focus_set())
         campo_apellido.bind("<Down>", lambda event: campo_ubicacion.focus_set())
         campo_apellido.bind("<Return>", lambda event: campo_ubicacion.focus_set())
+        campo_apellido.pack()
 
         # Campo de ubicación
         cls.colocar_texto("", 2)
         cls.colocar_texto("Ubicación", tamaño, fg=color)
-        campo_ubicacion.pack()
         campo_ubicacion.bind("<Escape>", lambda event: cls.raiz.focus_set())
         campo_ubicacion.bind("<Up>", lambda event: campo_apellido.focus_set())
+        campo_ubicacion.pack()
 
         # - Campo de imagen:
 
         def seleccionar_imagen():
-            global ruta_imagen
-
-            ruta_imagen = filedialog.askopenfilename(
+            cls._imagen = filedialog.askopenfilename(
                 title="Selecciona una imagen",
                 filetypes=[("Archivos de imagen", "*.png;*.jpg;*.jpeg")],
             )
 
-            if not ruta_imagen:
+            if not cls._imagen:
                 return
 
             campo_imagen.config(state="normal")
             campo_imagen.delete(0, tk.END)
-            campo_imagen.insert(0, ruta_imagen.split("/")[-1])
+            campo_imagen.insert(0, cls._imagen.split("/")[-1])
             campo_imagen.config(state="readonly")
 
         cls.colocar_texto("", 2)
         cls.colocar_texto("Imagen", tamaño, fg=color)
-        campo_imagen.pack(padx=10, pady=10)
         campo_imagen.bind("<Button-1>", lambda event: seleccionar_imagen())
         campo_imagen.bind("<Escape>", lambda event: cls.raiz.focus_set())
         campo_imagen.bind("<Up>", lambda event: campo_ubicacion.focus_set())
         campo_imagen.bind("<Return>", lambda event: boton_guardar.invoke())
-        hacer_reactivo(campo_imagen)
-
-        # Botón de guardar
+        campo_imagen.pack(padx=10, pady=10)
         boton_guardar.pack(pady=40)
+
+        # - Footer:
+
+        cls.colocar_footer()

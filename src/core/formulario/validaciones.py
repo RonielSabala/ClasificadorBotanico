@@ -1,35 +1,34 @@
-import os
 from tkinter import messagebox
 
-
-DEFAULT_TEXT = "<Selecciona una imagen>"
+from ..data.file import es_ruta
+from ..common.constants import DEFAULT_IMG
 
 
 def validar_campo(campo: str, nombre: str) -> bool:
     """
-    Devuelte verdadero si el campo es válido, de otro modo
-    devuelve Falso y muestra un error personalizado.
+    Si el campo es válido devuelve True, de otro
+    modo False y muestra un error personalizado.
     """
 
-    validez = True
+    es_valido = True
     mensaje = f"Ingrese {nombre}"
 
     if not campo:
-        validez = False
+        es_valido = False
         mensaje += "."
 
     elif len(campo) < 5:
-        validez = False
+        es_valido = False
         mensaje += " con 5 o más caracteres."
 
     elif len(campo) > 50:
-        validez = False
+        es_valido = False
         mensaje += " de 50 caracteres o menos."
 
-    if not validez:
+    if not es_valido:
         messagebox.showerror("Error", mensaje)
 
-    return validez
+    return es_valido
 
 
 def validar_nombre(nombre: str) -> bool:
@@ -45,15 +44,16 @@ def validar_ubicacion(ubicacion: str) -> bool:
 
 
 def validar_imagen(ruta_imagen: str) -> bool:
-    msg = ""
     es_valida = True
-    if ruta_imagen == DEFAULT_TEXT:
-        es_valida = False
-        msg = "Ingrese una imagen."
+    msg = ""
 
-    if not os.path.isfile(ruta_imagen):
+    if not es_ruta(ruta_imagen):
         es_valida = False
         msg = "La ruta de la imagen es invalida."
+
+    elif ruta_imagen == DEFAULT_IMG:
+        es_valida = False
+        msg = "Ingrese una imagen."
 
     if not es_valida:
         messagebox.showerror("Error", msg)

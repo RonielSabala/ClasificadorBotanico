@@ -1,15 +1,9 @@
 import tkinter as tk
 from tkinter import font
 
-# Escenas
-from ..imagenes.file import F_BANNER
-from ..main import (
-    RAIZ,
-    Escena,
-    Estilos,
-    cerrar_escenas,
-    hacer_reactivo,
-)
+from ..main import RAIZ, Escena, cerrar_escenas
+from ..common import estilos as Estilos
+from ..graficos.file import IMG_BANNER
 
 
 class Menu(Escena):
@@ -34,11 +28,9 @@ class Menu(Escena):
         from ..sobre_nosotros.file import SobreNosotros
         from ..tabla.file import Tabla
 
-        cls.colocar_footer()
-
         # - Header:
 
-        tk.Label(cls.raiz, image=F_BANNER, bg=cls.color_fondo).pack(padx=10, pady=5)
+        tk.Label(cls.raiz, image=IMG_BANNER, bg=cls.color_fondo).pack(padx=10, pady=5)
         cls.colocar_textoXY(
             "Presidencia de la República: www.presidencia.gob.do",
             9,
@@ -76,54 +68,46 @@ class Menu(Escena):
             cls.raiz,
             text="Llenar encuesta",
             command=Formulario.mostrar,
-            **Estilos.boton_primario,
+            **Estilos.btn_primario,
         )
         boton_registros = tk.Button(
             cls.raiz,
             text="📝",
-            font=("Arial", 50),
+            command=Tabla.mostrar,
             fg="ivory4",
             activeforeground="Gray20",
-            width=2,
-            border=0,
-            command=Tabla.mostrar,
-            **Estilos.fondo(cls),
+            **Estilos.btn_menu,
         )
         boton_sobre_nosotros = tk.Button(
             cls.raiz,
             text="❀",
-            font=("Arial", 50),
+            command=SobreNosotros.mostrar,
             fg="springGreen4",
             activeforeground="violetred4",
-            width=2,
-            border=0,
-            command=SobreNosotros.mostrar,
-            **Estilos.fondo(cls),
+            **Estilos.btn_menu,
         )
         boton_salir = tk.Button(
             cls.raiz,
             text="Salir",
-            font=font.Font(family="Arial", size=18, underline=True),
+            command=cerrar_escenas,
             fg="Red3",
             activeforeground="black",
             relief="sunken",
-            border=0,
-            command=cerrar_escenas,
-            **Estilos.fondo(cls),
+            **Estilos.btn_menu,
         )
 
-        # - Configuraciones de los botones:
+        # - Configuración:
 
         boton_formulario.pack(pady=0)
 
-        # Botón registros
+        # Botón de registros
         x, y = 0.5, 0.73
         boton_registros.place(relx=x, rely=y, anchor="center")
         cls.colocar_textoXY(
             "Registros", 14, (x - 0.01, y + 0.06), anchor="center", fg="black"
         )
 
-        # Botón de sobre nosotros
+        # Botón sobre nosotros
         x, y = 0.1, 0.9
         boton_sobre_nosotros.place(relx=x, rely=y, anchor="center")
         cls.colocar_textoXY(
@@ -132,14 +116,14 @@ class Menu(Escena):
 
         # Botón de salir
         x, y = 0.92, 0.94
+        boton_salir.config(
+            font=font.Font(family="Arial", size=18, underline=True), width=3
+        )
         boton_salir.place(relx=x, rely=y, anchor="center")
         cls.colocar_textoXY(
             "⥱", 25, (x, y + 0.04), anchor="center", fg=boton_salir.cget("fg")
         )
 
-        # Botones reactivos
-        hacer_reactivo(
-            boton_salir,
-            boton_registros,
-            boton_sobre_nosotros,
-        )
+        # - Footer:
+
+        cls.colocar_footer()

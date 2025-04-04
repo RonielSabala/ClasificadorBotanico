@@ -1,34 +1,20 @@
+import math
 import tkinter as tk
 from tkinter import font
 from tkinter import messagebox
 from typing import Sequence
-import math
 
-# Escenas
-from ..main import Escena, Estilos, hacer_reactivo
+from ..main import Escena
+from ..data import file as Data
+from ..common import estilos as Estilos
+from ..common.constants import COLUMNAS, FILA_MAX, COLUMNA_MAX, COLUMNA_FLOR
+from ..graficos.file import reescalar_imagen, IMG_ICONO, IMG_VACIO
 from ..formulario.file import Formulario
 from ..menu.file import Menu
-from ..imagenes.file import F_ICONO
-from ..data.file import es_ruta, obtener_formularios, limpiar_registros, predecir_imagen
-from ..imagenes.file import redimensionar_imagen, F_VACIO
-from ..common.constants import COLUMNAS, N_COLUMNAS, COLUMNA_FLOR
-
-
-N_LIMIT = 4
 
 
 class Tabla(Escena):
     escena_anterior = Menu
-
-    # Estilos
-    estilo_flecha = {
-        "fg": "Black",
-        "bg": "white",
-        "activeforeground": "DodgerBlue4",
-        "activebackground": "white",
-        "border": 0,
-        "relief": "sunken",
-    }
 
     # Variables
     _registros: list[Sequence]
@@ -43,26 +29,19 @@ class Tabla(Escena):
     cabezales: list[tk.Button] = []
 
     @classmethod
-    def mostrar(cls) -> None:
-        cls.configurar_escenas()
-        cls.obtener_registros()
-        cls.actualizar_registros()
-        cls.actualizar_tabla()
-
-    @classmethod
-    def configurar_escenas(cls):
-        Formulario.escena_anterior = cls
-
-    @classmethod
     def salir(cls):
         cls.var_filtro.set("")
         cls.ultimo_filtro = None, None
         cls.main_element = None
 
     @classmethod
+    def configurar_escenas(cls):
+        Formulario.escena_anterior = cls
+
+    @classmethod
     def obtener_registros(cls) -> None:
         cls._registros = [()]
-        for i, registro in enumerate(obtener_formularios(), start=1):
+        for i, registro in enumerate(Data.obtener_formularios(), start=1):
             cls._registros.append([f"{i}."] + registro)
 
     @classmethod
@@ -82,12 +61,12 @@ class Tabla(Escena):
         # - Completar los registros:
 
         n = len(registros)
-        if n > N_LIMIT:
-            for _ in range(N_LIMIT - (n - 1) % (N_LIMIT - 1) - 1):
-                registros.append([" "] * N_COLUMNAS)
+        if n > FILA_MAX:
+            for _ in range(FILA_MAX - (n - 1) % (FILA_MAX - 1) - 1):
+                registros.append([" "] * COLUMNA_MAX)
 
         cls.pagina = int(len(registros) != 1)
-        cls.max_pagina = math.ceil((n - 1) / (N_LIMIT - 1))
+        cls.max_pagina = math.ceil((n - 1) / (FILA_MAX - 1))
         cls.registros = registros
 
     @classmethod
@@ -101,7 +80,19 @@ class Tabla(Escena):
         super().mostrar()
 
     @classmethod
+    def mostrar(cls) -> None:
+        cls.configurar_escenas()
+        cls.obtener_registros()
+        cls.actualizar_registros()
+        cls.actualizar_tabla()
+
+    @classmethod
     def pagina_anterior(cls):
+        """
+        Carga la página anterior de registros
+        en la tabla.
+        """
+
         if cls.pagina == 1:
             cls.flecha_izquierda.config(state=tk.DISABLED)
             return
@@ -110,7 +101,12 @@ class Tabla(Escena):
         cls.actualizar_tabla()
 
     @classmethod
-    def pagina_siguiente(cls):
+    def pagina_posterior(cls):
+        """
+        Carga la página siguiente de registros
+        en la tabla.
+        """
+
         if cls.pagina == cls.max_pagina:
             cls.flecha_derecha.config(state=tk.DISABLED)
             return
@@ -120,6 +116,10 @@ class Tabla(Escena):
 
     @classmethod
     def eliminar_registros(cls):
+        """
+        Elimina todos los registros guardados.
+        """
+
         if len(cls._registros) <= 1:
             return
 
@@ -132,11 +132,15 @@ class Tabla(Escena):
         if not eleccion:
             return
 
-        limpiar_registros()
+        Data.limpiar_registros()
         Menu.mostrar()
 
     @classmethod
     def cambiar_categoria(cls, nuevo_valor: str) -> None:
+        """
+        Cambia la categoria a buscar.
+        """
+
         if (ultimo_valor := cls.categoria) == nuevo_valor:
             return
 
@@ -155,7 +159,13 @@ class Tabla(Escena):
                 )
 
     @classmethod
-    def filtrar_registros(cls) -> None:
+    def buscar_registros(cls) -> None:
+        """
+        Busca los registros según el texto
+        introducido en el campo de texto según
+        la categoria seleccionada.
+        """
+
         temp = cls.registros.copy()
         filtro = cls.var_filtro.get(), cls.categoria
         if filtro != cls.ultimo_filtro:
@@ -168,7 +178,7 @@ class Tabla(Escena):
             cls.actualizar_tabla()
 
     @classmethod
-    def boton_clasificar(cls, raiz, index: int) -> tk.Frame:
+    def clasificar_registro(cls, raiz, index: int) -> tk.Frame:
         bg = "white"
         grid = tk.Frame(raiz, bg=bg)
         grid.rowconfigure(0, weight=1)
@@ -179,7 +189,7 @@ class Tabla(Escena):
 
         def clasificar(linea: int) -> None:
             pagina = cls.pagina
-            predecir_imagen(linea)
+            Data.insertar_clasificacion(linea)
             cls.obtener_registros()
             cls.actualizar_registros()
             cls.pagina = pagina
@@ -189,7 +199,7 @@ class Tabla(Escena):
             grid,
             text="Clasificar",
             command=lambda valor=index: clasificar(valor),
-            **Estilos.boton_primario,
+            **Estilos.btn_primario,
         )
         boton.config(
             font=("Arial", 16, "bold"),
@@ -238,54 +248,49 @@ class Tabla(Escena):
 
     @classmethod
     def cargar(cls) -> None:
-        cls.cabezales = []
+        # - Header:
+
+        tk.Label(cls.raiz, image=IMG_ICONO, bg=cls.color_fondo).pack(padx=20, pady=15)
         cls.colocar_retorno()
-        cls.colocar_footer()
-        tk.Label(cls.raiz, image=F_ICONO, bg=cls.color_fondo).pack(padx=20, pady=15)
         cls.colocar_texto("Registros", 32, pady=0, fg="#091518")
         cls.colocar_texto("", 0, pady=2)
 
-        # Creación del grid
+        # - Grid de registros:
+
         grid = cls.obtener_grid()
         grid.pack(fill="both", padx=20, pady=0)
 
-        # - Dibujar el grid principal:
-
-        # Buscador
-        buscador = tk.Entry(
-            grid,
-            textvariable=cls.var_filtro,
-            font=("Arial", 18),
-            selectforeground="Black",
-            selectbackground="GoldenRod1",
-            width=30,
-        )
+        # Buscador de registros
+        buscador = tk.Entry(grid, textvariable=cls.var_filtro, **Estilos.campo_txt)
+        buscador.config(width=30)
         buscador.grid(row=0, column=1, columnspan=3, sticky="nsew", padx=0, pady=10)
         buscador.bind("<Escape>", lambda event: cls.raiz.focus_set())
         buscador.bind("<Return>", lambda event: boton_buscar.invoke())
         if cls.ultimo_filtro[0] is not None:
             cls.main_element = buscador
 
-        # Buscar
+        # Botón de buscar
         boton_buscar = tk.Button(
             grid,
             text="Buscar",
             font=("Arial", 13),
-            command=lambda: cls.filtrar_registros(),
+            command=lambda: cls.buscar_registros(),
             cursor="hand2",
         )
         boton_buscar.grid(row=0, column=4, sticky="w")
 
-        # Dibujar filas
-        index = (N_LIMIT - 1) * (cls.pagina - 1)
-        for fila, data in enumerate(cls.registros[index : index + N_LIMIT + 1]):
+        # - Insertar registros en el grid:
+
+        cls.cabezales = []
+        index = (FILA_MAX - 1) * (cls.pagina - 1)
+        for fila, data in enumerate(cls.registros[index : index + FILA_MAX + 1]):
             if fila == 0:
                 data = COLUMNAS
 
-            elif fila == N_LIMIT:
+            elif fila == FILA_MAX:
                 break
 
-            # Dibujar fila
+            # Insertar fila
             for columna, sub_data in enumerate(data):
                 # Color de las filas
                 fg, bg = "Black", cls.color_fondo
@@ -293,14 +298,16 @@ class Tabla(Escena):
                     if fila == 0:
                         # Cabezales
                         fg, bg = "white", "Dodgerblue4"
-                    elif columna != N_COLUMNAS - 1 and sub_data != " ":
+                    elif columna != COLUMNA_MAX - 1 and sub_data != " ":
                         # Registros
                         bg = "Gray96" if fila % 2 else "Gray92"
 
                 # Crear una imagen
                 if fila > 0 and columna == COLUMNA_FLOR:
                     img = (
-                        redimensionar_imagen(sub_data) if es_ruta(sub_data) else F_VACIO
+                        reescalar_imagen(sub_data)
+                        if Data.es_ruta(sub_data)
+                        else IMG_VACIO
                     )
 
                     elemento = tk.Label(grid, image=img)
@@ -312,7 +319,7 @@ class Tabla(Escena):
 
                     # Botón de predecir
                     if sub_data is None:
-                        elemento = cls.boton_clasificar(
+                        elemento = cls.clasificar_registro(
                             grid, int(cls.registros[index + fila][0][:-1])
                         )
 
@@ -321,14 +328,14 @@ class Tabla(Escena):
                         continue
 
                     # Predicciones
-                    elif sub_data != " " and fila > 0 and columna == N_COLUMNAS - 1:
+                    elif sub_data != " " and fila > 0 and columna == COLUMNA_MAX - 1:
                         elemento = cls.tabla_prediccion(grid, sub_data)
                         elemento.config(bg=bg)
                         elemento.grid(row=fila + 1, column=columna)
                         continue
 
                     # Crear un label
-                    elif fila > 0 or columna in (0, COLUMNA_FLOR, N_COLUMNAS - 1):
+                    elif fila > 0 or columna in (0, COLUMNA_FLOR, COLUMNA_MAX - 1):
                         elemento = tk.Label(grid)
                         if fila > 0:
                             fuente = "Segoe UI Emoji", 13
@@ -362,7 +369,7 @@ class Tabla(Escena):
                         elemento.config(
                             anchor=(
                                 "center"
-                                if fila in (0, N_LIMIT)
+                                if fila in (0, FILA_MAX)
                                 else ("e" if columna == 0 else "w")
                             ),
                             padx=15,
@@ -376,18 +383,18 @@ class Tabla(Escena):
                     pady=1,
                 )
 
-        # - Creación del grid de navegación:
+        # - Grid de navegación:
 
         grid_nav = cls.obtener_grid()
         grid_nav.pack(fill="none", padx=35, pady=0)
 
-        # Flechas
+        # Flecha para retroceder
         cls.flecha_izquierda = tk.Button(
             grid_nav,
             text="<",
             command=cls.pagina_anterior,
             font=("Arial", 24),
-            **cls.estilo_flecha,
+            **Estilos.flecha_nav,
         )
         cls.flecha_izquierda.grid(row=0, column=0, sticky="nsew", padx=0, pady=5)
 
@@ -400,43 +407,48 @@ class Tabla(Escena):
             font=("Arial", 14),
         ).grid(row=0, column=1, sticky="nsew", padx=0, pady=5)
 
+        # Flecha para avanzar
         cls.flecha_derecha = tk.Button(
             grid_nav,
             text=">",
-            command=cls.pagina_siguiente,
+            command=cls.pagina_posterior,
             font=("Arial", 24),
-            **cls.estilo_flecha,
+            **Estilos.flecha_nav,
         )
         cls.flecha_derecha.grid(row=0, column=2, sticky="nsew", padx=0, pady=5)
 
-        # - Configuración de las flechas:
+        # - Configuración:
 
         if cls.pagina <= 1:
             cls.flecha_izquierda.config(state=tk.DISABLED)
         else:
-            hacer_reactivo(cls.flecha_izquierda)
+            cls.flecha_izquierda.config(cursor="hand2")
 
         if cls.pagina >= cls.max_pagina:
             cls.flecha_derecha.config(state=tk.DISABLED)
         else:
-            hacer_reactivo(cls.flecha_derecha)
+            cls.flecha_derecha.config(cursor="hand2")
 
         cls.colocar_texto("", 0, pady=2)
 
-        # Boton Añadir
-        boton_añadir = tk.Button(
+        # Botón para añadir registros
+        btn_añadir = tk.Button(
             cls.raiz,
             text="✚ Añadir",
             command=Formulario.mostrar,
-            **Estilos.boton_añadir,
+            **Estilos.btn_añadir,  # type: ignore
         )
-        boton_añadir.pack(pady=0)
+        btn_añadir.pack(pady=0)
 
-        # Boton eliminar
-        boton_eliminar = tk.Button(
+        # Botón para eliminar todos los registros
+        btn_eliminar = tk.Button(
             cls.raiz,
             text="✘ Eliminar (TODO)",
             command=cls.eliminar_registros,
-            **Estilos.boton_eliminar,
+            **Estilos.btn_eliminar,  # type: ignore
         )
-        boton_eliminar.pack(pady=12)
+        btn_eliminar.pack(pady=12)
+
+        # - Footer:
+
+        cls.colocar_footer()
