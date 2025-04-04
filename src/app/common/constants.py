@@ -1,6 +1,6 @@
 # - Rutas:
 
-_RUTA = "app\\"
+_RUTA = "src\\app\\"
 
 # Carpetas
 RUTA_DATA = f"{_RUTA}storage\\data\\"
