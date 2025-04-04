@@ -4,17 +4,17 @@ from tkinter import font
 from tkinter import messagebox
 from typing import Sequence
 
-from ..main import Escena
-from ..data import file as Data
-from ..common import estilos as Estilos
-from ..common.constants import COLUMNAS, FILA_MAX, COLUMNA_MAX, COLUMNA_FLOR
-from ..graficos.file import reescalar_imagen, IMG_ICONO, IMG_VACIO
-from ..formulario.file import Formulario
-from ..menu.file import Menu
+from ....storage import main as Data
+from ....common.constants import COLUMNAS, FILA_MAX, COLUMNA_MAX, COLUMNA_FLOR
+from ...main import Page
+from ...styles import main as Estilos
+from ...assets.main import reescalar_imagen, IMG_ICONO, IMG_VACIO
+from ..formulario.main import Formulario
+from ..menu.main import Menu
 
 
-class Tabla(Escena):
-    escena_anterior = Menu
+class Tabla(Page):
+    pagina_anterior = Menu
 
     # Variables
     _registros: list[Sequence]
@@ -36,7 +36,7 @@ class Tabla(Escena):
 
     @classmethod
     def configurar_escenas(cls):
-        Formulario.escena_anterior = cls
+        Formulario.pagina_anterior = cls
 
     @classmethod
     def obtener_registros(cls) -> None:
@@ -87,9 +87,9 @@ class Tabla(Escena):
         cls.actualizar_tabla()
 
     @classmethod
-    def pagina_anterior(cls):
+    def pag_anterior(cls):
         """
-        Carga la página anterior de registros
+        Carga la pagina anterior de registros
         en la tabla.
         """
 
@@ -101,9 +101,9 @@ class Tabla(Escena):
         cls.actualizar_tabla()
 
     @classmethod
-    def pagina_posterior(cls):
+    def pag_posterior(cls):
         """
-        Carga la página siguiente de registros
+        Carga la pagina siguiente de registros
         en la tabla.
         """
 
@@ -250,8 +250,8 @@ class Tabla(Escena):
     def cargar(cls) -> None:
         # - Header:
 
-        tk.Label(cls.raiz, image=IMG_ICONO, bg=cls.color_fondo).pack(padx=20, pady=15)
         cls.colocar_retorno()
+        tk.Label(cls.raiz, image=IMG_ICONO, bg=cls.color_fondo).pack(padx=20, pady=15)
         cls.colocar_texto("Registros", 32, pady=0, fg="#091518")
         cls.colocar_texto("", 0, pady=2)
 
@@ -277,6 +277,7 @@ class Tabla(Escena):
             command=lambda: cls.buscar_registros(),
             cursor="hand2",
         )
+
         boton_buscar.grid(row=0, column=4, sticky="w")
 
         # - Insertar registros en el grid:
@@ -392,7 +393,7 @@ class Tabla(Escena):
         cls.flecha_izquierda = tk.Button(
             grid_nav,
             text="<",
-            command=cls.pagina_anterior,
+            command=cls.pag_anterior,
             font=("Arial", 24),
             **Estilos.flecha_nav,
         )
@@ -401,7 +402,7 @@ class Tabla(Escena):
         # Número de páginas
         tk.Label(
             grid_nav,
-            text=f"página {cls.pagina} de {cls.max_pagina}",
+            text=f"pagina {cls.pagina} de {cls.max_pagina}",
             fg="Black",
             bg=cls.color_fondo,
             font=("Arial", 14),
@@ -411,7 +412,7 @@ class Tabla(Escena):
         cls.flecha_derecha = tk.Button(
             grid_nav,
             text=">",
-            command=cls.pagina_posterior,
+            command=cls.pag_posterior,
             font=("Arial", 24),
             **Estilos.flecha_nav,
         )

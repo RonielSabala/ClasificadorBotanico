@@ -6,6 +6,7 @@ from msrest.authentication import ApiKeyCredentials
 from dotenv import load_dotenv
 import os
 
+
 load_dotenv()
 key = os.getenv("KEY")
 endpoint = os.getenv("ENDPOINT")

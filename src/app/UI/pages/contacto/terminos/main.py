@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import scrolledtext
 
 # Escenas
-from ...main import Escena
-from ..file import SobreNosotros
+from ....main import Page
+from ..main import Contacto
 
 
 info = """
@@ -36,8 +36,8 @@ El uso del Portal le otorga la condición de usuario del Portal (en lo que sigue
 4.Para utilizar el Portal no es indispensable la instalación de las "cookies" enviadas por el Jardín Botánico Nacional, sin perjuicio de que en tal caso puede ser necesario que el Usuario se registre cada vez que acceda a un Servicio que requiera un registro previo."""
 
 
-class Terminos(Escena):
-    escena_anterior = SobreNosotros
+class Terminos(Page):
+    pagina_anterior = Contacto
 
     @classmethod
     def cargar(cls) -> None:

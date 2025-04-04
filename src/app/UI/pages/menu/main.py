@@ -1,12 +1,12 @@
 import tkinter as tk
 from tkinter import font
 
-from ..main import RAIZ, Escena, cerrar_escenas
-from ..common import estilos as Estilos
-from ..graficos.file import IMG_BANNER
+from ...main import RAIZ, Page, close_pages
+from ...styles import main as Estilos
+from ...assets.main import IMG_BANNER
 
 
-class Menu(Escena):
+class Menu(Page):
     @classmethod
     def mostrar(cls) -> None:
         cls.configurar_escenas()
@@ -18,15 +18,15 @@ class Menu(Escena):
 
     @classmethod
     def configurar_escenas(cls):
-        from ..formulario.file import Formulario
+        from ..formulario.main import Formulario
 
-        Formulario.escena_anterior = cls
+        Formulario.pagina_anterior = cls
 
     @classmethod
     def cargar(cls) -> None:
-        from ..formulario.file import Formulario
-        from ..sobre_nosotros.file import SobreNosotros
-        from ..tabla.file import Tabla
+        from ..formulario.main import Formulario
+        from ..contacto.main import Contacto
+        from ..tabla.main import Tabla
 
         # - Header:
 
@@ -81,7 +81,7 @@ class Menu(Escena):
         boton_sobre_nosotros = tk.Button(
             cls.raiz,
             text="❀",
-            command=SobreNosotros.mostrar,
+            command=Contacto.mostrar,
             fg="springGreen4",
             activeforeground="violetred4",
             **Estilos.btn_menu,
@@ -89,7 +89,7 @@ class Menu(Escena):
         boton_salir = tk.Button(
             cls.raiz,
             text="Salir",
-            command=cerrar_escenas,
+            command=close_pages,
             fg="Red3",
             activeforeground="black",
             relief="sunken",

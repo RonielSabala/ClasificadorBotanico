@@ -1,13 +1,13 @@
 import tkinter as tk
 
-from ..main import Escena
-from ..common import estilos as Estilos
-from ..graficos.file import IMG_ESCUDO, IMG_ICONO
-from ..menu.file import Menu
+from ...main import Page
+from ...styles import main as Estilos
+from ...assets.main import IMG_ESCUDO, IMG_ICONO
+from ..menu.main import Menu
 
 
-class SobreNosotros(Escena):
-    escena_anterior = Menu
+class Contacto(Page):
+    pagina_anterior = Menu
 
     @classmethod
     def obtener_sep(cls, frame, tamaño: int):
@@ -22,9 +22,9 @@ class SobreNosotros(Escena):
 
     @classmethod
     def cargar(cls) -> None:
-        from .terminos.file import Terminos
-        from .politicas.file import Politicas
-        from .preguntas.file import Preguntas
+        from .terminos.main import Terminos
+        from .politicas.main import Politicas
+        from .preguntas.main import Preguntas
 
         # - Creación de los grids:
 

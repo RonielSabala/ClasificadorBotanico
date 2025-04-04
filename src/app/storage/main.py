@@ -1,6 +1,6 @@
 import os
 
-from ..API.file import obtener_prediccion
+from ..API.main import obtener_prediccion
 from ..common.constants import FORMULARIOS, DATA_IMGS
 
 

@@ -1,10 +1,10 @@
 # - Rutas:
 
-_RUTA = "core\\"
+_RUTA = "app\\"
 
 # Carpetas
-RUTA_DATA = f"{_RUTA}data\\"
-RUTA_IMGS = f"{_RUTA}graficos\\imagenes\\"
+RUTA_DATA = f"{_RUTA}storage\\data\\"
+RUTA_IMGS = f"{_RUTA}UI\\assets\\imagenes\\"
 
 # Data guardada
 DATA_IMGS = f"{RUTA_DATA}imagenes"

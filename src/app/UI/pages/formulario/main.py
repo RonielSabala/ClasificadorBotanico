@@ -3,12 +3,12 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
 
-from ..main import Escena
-from ..data import file as Data
-from ..common import estilos as Estilos
-from ..graficos.file import IMG_ICONO
-from ..common.constants import DEFAULT_IMG
-from ..menu.file import Menu
+from ....common.constants import DEFAULT_IMG
+from ....storage import main as Data
+from ...main import Page
+from ...styles import main as Estilos
+from ...assets.main import IMG_ICONO
+from ..menu.main import Menu
 
 from .validaciones import (
     validar_nombre,
@@ -51,13 +51,13 @@ def guardar_formulario() -> None:
 
         return
 
-    # Mostrar la escena anterior
-    if escena := Formulario.escena_anterior:
-        escena.mostrar()
+    # Mostrar la pagina anterior
+    if pagina := Formulario.pagina_anterior:
+        pagina.mostrar()
 
 
-class Formulario(Escena):
-    escena_anterior = Menu
+class Formulario(Page):
+    pagina_anterior = Menu
 
     # Variables
     nombre = tk.StringVar()
