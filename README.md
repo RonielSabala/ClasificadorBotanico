@@ -1,9 +1,15 @@
-# Proyecto Azure. Grupo 2.
+# Proyecto Azure: "Clasificador Botánico".
 
-- Integrantes del grupo:
-  - Roniel Antonio Sabala Germán 20240212
-  - Abel Eduardo Martínez Robles 20240227
+Proyecto de software para clasificar rosas, orquídeas, margaritas, claveles y girasoles desarrollado en Python con Tkinter y un modelo en la nube Azure AI Custom Vision.
 
-# ClasificadorBotanico
+- Integrantes del proyecto:
+  - Roniel Antonio Sabala Germán mat. 20240212
+  - Abel Eduardo Martínez Robles mat. 20240227
 
-Clasificador de rosas, orquídeas, margaritas, claveles y girasoles implementado en Python con Tkinter y un modelo Azure AI Custom Vision.
+¡Toda la documentación del proyecto ya está disponible!
+
+Página oficial de Azure AI Custom Vision:
+
+```
+https://www.customvision.ai/
+```
